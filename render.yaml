@@ -1,0 +1,37 @@
+services:
+  # ─── BACKEND API SERVICE ────────────────────────────────────────────────
+  - type: web
+    name: resolve-ai-backend
+    env: python
+    region: ohio
+    plan: starter # Uses the starter tier (or free if available based on account)
+    buildCommand: "pip install -r complaint_ai/requirements.txt"
+    startCommand: "uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+      # Make sure to set these securely in the Render dashboard!
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+
+  # ─── FRONTEND STATIC SITE ───────────────────────────────────────────────
+  - type: web
+    name: resolve-ai-frontend
+    env: static
+    region: ohio
+    buildCommand: "cd frontend && npm install && npm run build"
+    staticPublishPath: "./frontend/dist"
+    # SPAs need to redirect 404s to index.html for React Router to work
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      # Automatically pass the deployed backend's URL to Vite!
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: resolve-ai-backend
+          envVarKey: RENDER_EXTERNAL_URL

@@ -1,4 +1,5 @@
-const PROCESS_COMPLAINT_URL = "http://127.0.0.1:8000/api/process-complaint";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+const PROCESS_COMPLAINT_URL = `${BASE_URL}/api/process-complaint`;
 
 export async function processComplaint(complaint, customer_type) {
   const payload = {
